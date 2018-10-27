@@ -1,7 +1,6 @@
 #include <vector>
 #include "sobel.h"
 #include <stdio.h>
-#include <errno.h>
 #include <string.h>
 
 #ifdef __APPLE__
@@ -68,7 +67,7 @@ cl_int get_platform(const char *vendor, cl_platform_id *chosen) {
     ret = clGetPlatformInfo(platforms[i], CL_PLATFORM_VENDOR, size_ret, _vendor, NULL);
     if(ret != CL_SUCCESS) break;
 
-    printf("%s\n", _vendor);
+    printf("Found %s!\n", _vendor);
     if(strstr(_vendor, vendor) != NULL) {
       *chosen = platforms[i];
       ret = CL_SUCCESS;
@@ -85,7 +84,7 @@ cl_int init(cl_device_id *devices, cl_context *context, cl_command_queue *queue)
   cl_platform_id platform;
   cl_int err;
   err = get_platform(VENDOR, &platform);
-  handle(__LINE__ - 1, errno);
+  handle(__LINE__ - 1, err);
 
   err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, N_GPUS, devices, NULL);
   handle(__LINE__ - 1, err);

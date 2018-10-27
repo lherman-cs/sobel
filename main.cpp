@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     inData = data;
 
     auto start = high_resolution_clock::now(); 
-
+    
     // findEdge(image->bmpWidth, image->bmpHeight);
     sobel(inData, image_sobeled, image->bmpWidth, image->bmpHeight);
 
