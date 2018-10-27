@@ -11,10 +11,7 @@
 #include "cscbitmap.h"
 #include "sobel.h"
 #include <stdio.h>
-#include <chrono> 
 #include <iostream>
-
-using namespace std::chrono;
 
 
 int sobel_x[3][3] = { { 1, 0,-1},
@@ -41,10 +38,10 @@ int main(int argc, char *argv[])
     //QCoreApplication a(argc, argv);
     char* bmpFile;
     if( argc < 2)
-      {
-	printf("Filename argument required!\n");
-	return 0;
-      }
+    {
+        printf("Filename argument required!\n");
+        return 0;
+    }
     else
       bmpFile = argv[1]; 
     
@@ -56,17 +53,8 @@ int main(int argc, char *argv[])
     image_sobeled.resize(image->bmpSize, 255);
     inData = data;
 
-    auto start = high_resolution_clock::now(); 
-    
     // findEdge(image->bmpWidth, image->bmpHeight);
     sobel(inData, image_sobeled, image->bmpWidth, image->bmpHeight);
-
-    auto stop = high_resolution_clock::now(); 
-    auto duration = duration_cast<microseconds>(stop - start); 
-
-    std::cout << "Time taken by function: "
-         << duration.count() << " microseconds" << std::endl; 
-
 
     /// Write image data passed as argument to a bitmap file
     image->writeGrayBmp(&image_sobeled[0]);
