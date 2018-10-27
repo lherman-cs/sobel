@@ -17,19 +17,23 @@ const char *kernel =
 "void __kernel find_edge(__read_only image2d_t in, __write_only image2d_t out) {\n"
 "const int2 pos = {get_global_id(1), get_global_id(0)};\n"
 "// Compute gradient in +ve x direction\n"
-"float4 gradient_X = read_imagef(in, sampler, pos + (int2)(-1, -1))\n"
-"- read_imagef(in, sampler, pos + (int2)(-1, 1))\n"
+"const float4 topleft = read_imagef(in, sampler, pos + (int2)(-1, -1));\n"
+"const float4 topright = read_imagef(in, sampler, pos + (int2)(-1, 1));\n"
+"const float4 botleft = read_imagef(in, sampler, pos + (int2)(1, -1));\n"
+"const float4 botright = read_imagef(in, sampler, pos + (int2)(1, 1));\n"
+"float4 gradient_X = topleft\n"
+"- topright\n"
 "+ 2 * read_imagef(in, sampler, pos + (int2)(0, -1))\n"
 "- 2 * read_imagef(in, sampler, pos + (int2)(0, 1))\n"
-"+ read_imagef(in, sampler, pos + (int2)(1, -1))\n"
-"- read_imagef(in, sampler, pos + (int2)(1, 1));\n"
+"+ botleft\n"
+"- botright;\n"
 "// Compute gradient in +ve y direction\n"
-"float4 gradient_Y = read_imagef(in, sampler, pos + (int2)(-1, -1))\n"
+"float4 gradient_Y = topleft\n"
 "+ 2 * read_imagef(in, sampler, pos + (int2)(-1, 0))\n"
-"+ read_imagef(in, sampler, pos + (int2)(-1, 1))\n"
-"- read_imagef(in, sampler, pos + (int2)(1, -1))\n"
+"+ topright\n"
+"- botleft\n"
 "- 2 * read_imagef(in, sampler, pos + (int2)(1, 0))\n"
-"- read_imagef(in, sampler, pos + (int2)(1, 1));\n"
+"- botright;\n"
 "float4 value = (float4)1.0 - sqrt(pow(gradient_X, 2) + pow(gradient_Y, 2));\n"
 "write_imagef(out, pos, value);\n"
 "}\n";
@@ -101,6 +105,17 @@ void sobel(const unsigned char *in, std::vector<unsigned char> &out,
   size_t size = w * h;
   size_t offset[] = {1, 1};
   size_t global_work_size[] = {h - 1, w - 1};
+  cl_image_desc image_desc;
+  image_desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+  image_desc.image_width = w;
+  image_desc.image_height = h;
+  image_desc.image_array_size = 1;
+  image_desc.image_row_pitch = 0;
+  image_desc.image_slice_pitch = 0;
+  image_desc.num_mip_levels = 0;
+  image_desc.num_samples = 0;
+  image_desc.buffer = NULL;
+
   cl_device_id devices;
   cl_context context;
   cl_command_queue queue;
@@ -109,12 +124,12 @@ void sobel(const unsigned char *in, std::vector<unsigned char> &out,
   init(&devices, &context, &queue);
 
   const cl_image_format format = {CL_INTENSITY, CL_UNORM_INT8};
-  cl_mem d_in = clCreateImage2D(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, &format,
-                        w, h, 0, (void*)in, &err);
+  cl_mem d_in = clCreateImage(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, &format,
+                        &image_desc, (void*)in, &err);
   handle(__LINE__ - 1, err);
 
-  cl_mem d_out = clCreateImage2D(context, CL_MEM_WRITE_ONLY, &format,
-                        w, h, 0, NULL, &err);
+  cl_mem d_out = clCreateImage(context, CL_MEM_WRITE_ONLY, &format,
+                        &image_desc, NULL, &err);
   handle(__LINE__ - 1, err);
 
 

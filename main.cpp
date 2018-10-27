@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
     image_sobeled.resize(image->bmpSize, 255);
     inData = data;
 
-    findEdge(image->bmpWidth, image->bmpHeight);
-    // sobel(inData, image_sobeled, image->bmpWidth, image->bmpHeight);
+    // findEdge(image->bmpWidth, image->bmpHeight);
+    sobel(inData, image_sobeled, image->bmpWidth, image->bmpHeight);
 
     /// Write image data passed as argument to a bitmap file
     image->writeGrayBmp(&image_sobeled[0]);
